@@ -33,6 +33,9 @@ def parse(source):
 
         return sources
 
+    if source[0] == "'":
+        return ["quote", parse(source[1:])]
+
     return source
 
 ##
