@@ -17,12 +17,15 @@ def parse(source):
     source = remove_comments(source)
     source = source.strip()
 
+    # Handle booleans.
     if source in ("#t", "#f"):
         return source == "#t"
 
+    # Handle integers.
     if source.isdigit():
         return int(source)
 
+    # Handle lists.
     if source[0] == "(":
         pos_of_matching_paren = find_matching_paren(source)
         if pos_of_matching_paren < len(source) - 1:
@@ -33,6 +36,7 @@ def parse(source):
 
         return sources
 
+    # Handle quotes.
     if source[0] == "'":
         return ["quote", parse(source[1:])]
 
