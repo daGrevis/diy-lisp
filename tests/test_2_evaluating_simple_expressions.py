@@ -21,7 +21,7 @@ def test_evaluating_integer():
     assert_equals(42, evaluate(42, Environment()))
 
 def test_evaluating_quote():
-    """When a call is done to the `quote` form, the argument should be returned without 
+    """When a call is done to the `quote` form, the argument should be returned without
     being evaluated.
 
     (quote foo) -> foo
@@ -51,7 +51,7 @@ def test_evaluating_eq_function():
 
     # From this point, the ASTs might sometimes be too long or cummbersome to
     # write down explicitly, and we'll use `parse` to make them for us.
-    # Remember, if you need to have a look at exactly what is passed to `evaluate`, 
+    # Remember, if you need to have a look at exactly what is passed to `evaluate`,
     # just add a print statement in the test (or in `evaluate`).
 
     assert_equals(True, evaluate(parse("(eq 'foo 'foo)"), Environment()))
