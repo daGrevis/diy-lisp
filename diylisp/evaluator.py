@@ -43,8 +43,8 @@ def evaluate(ast, env):
     math_operations = ("+", "-", "*", "/", "mod", ">", "<")
     if is_list(ast) and ast[0] in math_operations:
         operation = ast[0]
-        x = ast[1]
-        y = ast[2]
+        x = evaluate(ast[1], env)
+        y = evaluate(ast[2], env)
 
         if not is_integer(x) or not is_integer(y):
             raise LispError()
@@ -63,5 +63,16 @@ def evaluate(ast, env):
             return x > y
         if operation == "<":
             return x < y
+
+    special_forms = ("if", )
+    if is_list(ast) and ast[0] in special_forms:
+        operation = ast[0]
+
+        if operation == "if":
+            x = evaluate(ast[1], env)
+            if x:
+                return evaluate(ast[2], env)
+            else:
+                return evaluate(ast[3], env)
 
     return ast
