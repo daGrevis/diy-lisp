@@ -23,9 +23,9 @@ def test_simple_lookup():
 def test_lookup_on_missing_raises_exception():
     """When looking up an undefined symbol, an error should be raised.
 
-    The error message should contain the relevant symbol, and inform that it has 
+    The error message should contain the relevant symbol, and inform that it has
     not been defined."""
-    
+
     with assert_raises_regexp(LispError, "my-missing-var"):
         empty_env = Environment()
         empty_env.lookup("my-missing-var")
@@ -73,14 +73,14 @@ def test_redefine_variables_illegal():
 
 
 """
-With the `Environment` working, it's time to implement evaluation of expressions 
+With the `Environment` working, it's time to implement evaluation of expressions
 with variables.
 """
 
 def test_evaluating_symbol():
     """Symbols (other than #t and #f) are treated as variable references.
 
-    When evaluating a symbol, the corresponding value should be looked up in the 
+    When evaluating a symbol, the corresponding value should be looked up in the
     environment."""
 
     env = Environment({"foo": 42})
@@ -99,7 +99,7 @@ def test_define():
 
     The `define` form is used to define new bindings in the environment.
     A `define` call should result in a change in the environment. What you
-    return from evaluating the definition is not important (although it 
+    return from evaluating the definition is not important (although it
     affects what is printed in the REPL)."""
 
     env = Environment()
