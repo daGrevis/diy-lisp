@@ -112,11 +112,25 @@ def define_special(env, *args):
     env.set(x, y)
 
 
+def lambda_special(env, *args):
+    if len(args) != 2:
+        raise LispError("number of arguments")
+
+    params = args[0]
+    body = args[1]
+
+    if not is_list(params):
+        raise LispError()
+
+    return Closure(env, params, body)
+
+
 # XXX: The difference between functions and specials is that specials accept unevaluated arguments.
 specials = {
     "quote": quote_special,
     "if": if_special,
     "define": define_special,
+    "lambda": lambda_special,
 }
 
 
@@ -135,6 +149,17 @@ def evaluate(ast, env):
                     in args]
 
             return functions[operation](env, *args)
+
+        # TODO: I could put this into dict if I overwrite magic-method for Closure class to be matched by key `closure`.
+        if is_closure(operation):
+            closure = operation
+            args = [evaluate(arg, env) for arg
+                    in args]
+
+            variables = dict(zip(closure.params, args))
+            env = (closure.env).extend(variables)
+
+            return evaluate(closure.body, env)
 
     if is_symbol(ast):
         return env.lookup(ast)
