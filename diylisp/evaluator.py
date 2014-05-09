@@ -15,49 +15,49 @@ in a day, after all.)
 """
 
 
-def add(x, y):
+def add(env, x, y):
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x + y
 
 
-def sub(x, y):
+def sub(env, x, y):
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x - y
 
 
-def mul(x, y):
+def mul(env, x, y):
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x * y
 
 
-def div(x, y):
+def div(env, x, y):
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x / y
 
 
-def mod(x, y):
+def mod(env, x, y):
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x % y
 
 
-def gt(x, y):
+def gt(env, x, y):
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x > y
 
 
-def lt(x, y):
+def lt(env, x, y):
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
@@ -75,18 +75,18 @@ functions = {
 }
 
 
-def quote_special(x):
-    return evaluate_wo_env(x)
+def quote_special(env, x):
+    return evaluate(x, env)
 
 
-def atom_special(x):
-    x = evaluate_wo_env(x)
+def atom_special(env, x):
+    x = evaluate(x, env)
     return not is_list(x)
 
 
-def eq_special(x, y):
-    x = evaluate_wo_env(x)
-    y = evaluate_wo_env(y)
+def eq_special(env, x, y):
+    x = evaluate(x, env)
+    y = evaluate(y, env)
 
     if not is_atom(x):
         return False
@@ -94,10 +94,10 @@ def eq_special(x, y):
     return x == y
 
 
-def if_special(x, y, z):
-    if evaluate_wo_env(x):
-        return evaluate_wo_env(y)
-    return evaluate_wo_env(z)
+def if_special(env, x, y, z):
+    if evaluate(x, env):
+        return evaluate(y, env)
+    return evaluate(z, env)
 
 
 specials = {
@@ -108,24 +108,20 @@ specials = {
 }
 
 
-def evaluate_wo_env(ast):
+def evaluate(ast, env):
+    """Evaluate an Abstract Syntax Tree in the specified environment."""
 
     if is_list(ast):
         operation = ast[0]
         args = ast[1:]
 
         if operation in specials:
-            return specials[operation](*args)
+            return specials[operation](env, *args)
 
         if operation in functions:
-            args = map(evaluate_wo_env, args)
+            args = [evaluate(arg, env) for arg
+                    in args]
 
-            return functions[operation](*args)
+            return functions[operation](env, *args)
 
     return ast
-
-
-def evaluate(ast, env):
-    """Evaluate an Abstract Syntax Tree in the specified environment."""
-
-    return evaluate_wo_env(ast)
