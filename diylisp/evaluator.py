@@ -15,6 +15,17 @@ in a day, after all.)
 """
 
 
+def atom(env, x):
+    return not is_list(x)
+
+
+def eq(env, x, y):
+    if not is_atom(x):
+        return False
+
+    return x == y
+
+
 def add(env, x, y):
     if not is_integer(x) or not is_integer(y):
         raise LispError()
@@ -65,6 +76,8 @@ def lt(env, x, y):
 
 
 functions = {
+    "atom": atom,
+    "eq": eq,
     "+": add,
     "-": sub,
     "*": mul,
@@ -76,22 +89,7 @@ functions = {
 
 
 def quote_special(env, x):
-    return evaluate(x, env)
-
-
-def atom_special(env, x):
-    x = evaluate(x, env)
-    return not is_list(x)
-
-
-def eq_special(env, x, y):
-    x = evaluate(x, env)
-    y = evaluate(y, env)
-
-    if not is_atom(x):
-        return False
-
-    return x == y
+    return x
 
 
 def if_special(env, x, y, z):
@@ -100,10 +98,9 @@ def if_special(env, x, y, z):
     return evaluate(z, env)
 
 
+# XXX: The difference between functions and specials is that specials accept unevaluated arguments.
 specials = {
     "quote": quote_special,
-    "atom": atom_special,
-    "eq": eq_special,
     "if": if_special,
 }
 
@@ -123,5 +120,8 @@ def evaluate(ast, env):
                     in args]
 
             return functions[operation](env, *args)
+
+    if is_symbol(ast):
+        return env.lookup(ast)
 
     return ast
