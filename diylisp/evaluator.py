@@ -98,10 +98,25 @@ def if_special(env, x, y, z):
     return evaluate(z, env)
 
 
+def define_special(env, *args):
+    if len(args) != 2:
+        raise LispError("Wrong number of arguments")
+
+    x = args[0]
+
+    if not is_symbol(x):
+        raise LispError("non-symbol")
+
+    y = evaluate(args[1], env)
+
+    env.set(x, y)
+
+
 # XXX: The difference between functions and specials is that specials accept unevaluated arguments.
 specials = {
     "quote": quote_special,
     "if": if_special,
+    "define": define_special,
 }
 
 
