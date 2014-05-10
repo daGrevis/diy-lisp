@@ -141,6 +141,17 @@ def evaluate(ast, env):
         operation = ast[0]
         args = ast[1:]
 
+        if is_list(operation):
+
+            if operation[0] == "lambda":
+                closure = lambda_special(env, *operation[1:])
+
+                return evaluate([closure] + args, env)
+
+            closure = evaluate(operation, env)
+            return evaluate([closure] + args, env)
+
+
         if operation in specials:
             return specials[operation](env, *args)
 
@@ -150,16 +161,31 @@ def evaluate(ast, env):
 
             return functions[operation](env, *args)
 
-        # TODO: I could put this into dict if I overwrite magic-method for Closure class to be matched by key `closure`.
         if is_closure(operation):
             closure = operation
             args = [evaluate(arg, env) for arg
                     in args]
 
+            len_of_closure_params = len(closure.params)
+            len_of_args = len(args)
+
+            if len_of_closure_params != len_of_args:
+                message = ("wrong number of arguments, expected {} got {}"
+                           .format(len_of_closure_params, len_of_args))
+                raise LispError(message)
+
             variables = dict(zip(closure.params, args))
             env = (closure.env).extend(variables)
 
             return evaluate(closure.body, env)
+
+        if not is_symbol(operation):
+            raise LispError("not a function")
+
+        closure = env.variables[operation]
+        return evaluate([closure] + args, env)
+
+
 
     if is_symbol(ast):
         return env.lookup(ast)
