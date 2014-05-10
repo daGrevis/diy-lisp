@@ -21,7 +21,8 @@ def evaluate_flat(args, env):
 
 
 def atom(ast, env):
-    x = evaluate(ast[1], env)
+    args = ast[1:]
+    x = evaluate(args[0], env)
 
     return not is_list(x)
 
@@ -106,6 +107,37 @@ def lt(ast, env):
     return x < y
 
 
+def cons(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
+    return [x] + y
+
+
+def head(ast, env):
+    args = ast[1:]
+    x = evaluate(args[0], env)
+
+    if not x:
+        raise LispError()
+
+    return x[0]
+
+
+def tail(ast, env):
+    args = ast[1:]
+    x = evaluate(args[0], env)
+
+    return x[1:]
+
+
+def empty(ast, env):
+    args = ast[1:]
+    x = evaluate(args[0], env)
+
+    return (not x)
+
+
 def quote(ast, env):
     args = ast[1:]
     return args[0]
@@ -179,6 +211,10 @@ builtin_functions = {
     "mod": mod,
     ">": gt,
     "<": lt,
+    "cons": cons,
+    "head": head,
+    "tail": tail,
+    "empty": empty,
     "quote": quote,
     "if": if_expr,
     "define": define,
