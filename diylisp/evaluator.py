@@ -151,7 +151,6 @@ def evaluate(ast, env):
             closure = evaluate(operation, env)
             return evaluate([closure] + args, env)
 
-
         if operation in specials:
             return specials[operation](env, *args)
 
@@ -184,8 +183,6 @@ def evaluate(ast, env):
 
         closure = env.variables[operation]
         return evaluate([closure] + args, env)
-
-
 
     if is_symbol(ast):
         return env.lookup(ast)
