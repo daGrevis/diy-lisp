@@ -142,12 +142,6 @@ def evaluate(ast, env):
         args = ast[1:]
 
         if is_list(operation):
-
-            if operation[0] == "lambda":
-                closure = lambda_special(env, *operation[1:])
-
-                return evaluate([closure] + args, env)
-
             closure = evaluate(operation, env)
             return evaluate([closure] + args, env)
 
