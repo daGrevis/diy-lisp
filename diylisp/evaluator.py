@@ -15,6 +15,11 @@ in a day, after all.)
 """
 
 
+def evaluate_args(args, env):
+    return [evaluate(arg, env) for arg
+            in args]
+
+
 def atom(env, x):
     return not is_list(x)
 
@@ -88,17 +93,23 @@ functions = {
 }
 
 
-def quote_special(env, x):
-    return x
+def quote_special(ast, env):
+    args = ast[1:]
+    return args[0]
 
 
-def if_special(env, x, y, z):
+def if_special(ast, env):
+    args = ast[1:]
+    x, y, z = args
+
     if evaluate(x, env):
         return evaluate(y, env)
     return evaluate(z, env)
 
 
-def define_special(env, *args):
+def define_special(ast, env):
+    args = ast[1:]
+
     if len(args) != 2:
         raise LispError("Wrong number of arguments")
 
@@ -112,7 +123,9 @@ def define_special(env, *args):
     env.set(x, y)
 
 
-def lambda_special(env, *args):
+def lambda_special(ast, env):
+    args = ast[1:]
+
     if len(args) != 2:
         raise LispError("number of arguments")
 
@@ -125,12 +138,31 @@ def lambda_special(env, *args):
     return Closure(env, params, body)
 
 
+def closure_special(ast, env):
+    closure = ast[0]
+    args = evaluate_args(ast[1:], env)
+
+    len_of_closure_params = len(closure.params)
+    len_of_args = len(args)
+
+    if len_of_closure_params != len_of_args:
+        message = ("wrong number of arguments, expected {} got {}"
+                    .format(len_of_closure_params, len_of_args))
+        raise LispError(message)
+
+    variables = dict(zip(closure.params, args))
+    env = (closure.env).extend(variables)
+
+    return evaluate(closure.body, env)
+
+
 # XXX: The difference between functions and specials is that specials accept unevaluated arguments.
 specials = {
     "quote": quote_special,
     "if": if_special,
     "define": define_special,
     "lambda": lambda_special,
+    "closure": closure_special,
 }
 
 
@@ -143,39 +175,22 @@ def evaluate(ast, env):
 
         if is_list(operation):
             closure = evaluate(operation, env)
+
             return evaluate([closure] + args, env)
 
         if operation in specials:
-            return specials[operation](env, *args)
+            return specials[operation](ast, env)
 
         if operation in functions:
-            args = [evaluate(arg, env) for arg
-                    in args]
+            args = evaluate_args(args, env)
 
             return functions[operation](env, *args)
-
-        if is_closure(operation):
-            closure = operation
-            args = [evaluate(arg, env) for arg
-                    in args]
-
-            len_of_closure_params = len(closure.params)
-            len_of_args = len(args)
-
-            if len_of_closure_params != len_of_args:
-                message = ("wrong number of arguments, expected {} got {}"
-                           .format(len_of_closure_params, len_of_args))
-                raise LispError(message)
-
-            variables = dict(zip(closure.params, args))
-            env = (closure.env).extend(variables)
-
-            return evaluate(closure.body, env)
 
         if not is_symbol(operation):
             raise LispError("not a function")
 
         closure = env.variables[operation]
+
         return evaluate([closure] + args, env)
 
     if is_symbol(ast):
