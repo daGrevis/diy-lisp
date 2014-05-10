@@ -97,16 +97,6 @@ def gt(ast, env):
     return x > y
 
 
-def lt(ast, env):
-    args = ast[1:]
-    x, y = evaluate_flat(args, env)
-
-    if not is_integer(x) or not is_integer(y):
-        raise LispError()
-
-    return x < y
-
-
 def cons(ast, env):
     args = ast[1:]
     x, y = evaluate_flat(args, env)
@@ -210,7 +200,6 @@ builtin_functions = {
     "/": div,
     "mod": mod,
     ">": gt,
-    "<": lt,
     "cons": cons,
     "head": head,
     "tail": tail,
