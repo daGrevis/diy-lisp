@@ -15,90 +15,103 @@ in a day, after all.)
 """
 
 
-def evaluate_args(args, env):
+def evaluate_flat(args, env):
     return [evaluate(arg, env) for arg
             in args]
 
 
-def atom(env, x):
+def atom(ast, env):
+    x = evaluate(ast[1], env)
+
     return not is_list(x)
 
 
-def eq(env, x, y):
+def eq(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
     if not is_atom(x):
         return False
 
     return x == y
 
 
-def add(env, x, y):
+def add(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x + y
 
 
-def sub(env, x, y):
+def sub(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x - y
 
 
-def mul(env, x, y):
+def mul(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x * y
 
 
-def div(env, x, y):
+def div(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x / y
 
 
-def mod(env, x, y):
+def mod(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x % y
 
 
-def gt(env, x, y):
+def gt(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x > y
 
 
-def lt(env, x, y):
+def lt(ast, env):
+    args = ast[1:]
+    x, y = evaluate_flat(args, env)
+
     if not is_integer(x) or not is_integer(y):
         raise LispError()
 
     return x < y
 
 
-functions = {
-    "atom": atom,
-    "eq": eq,
-    "+": add,
-    "-": sub,
-    "*": mul,
-    "/": div,
-    "mod": mod,
-    ">": gt,
-    "<": lt,
-}
-
-
-def quote_special(ast, env):
+def quote(ast, env):
     args = ast[1:]
     return args[0]
 
 
-def if_special(ast, env):
+def if_expr(ast, env):
     args = ast[1:]
     x, y, z = args
 
@@ -107,7 +120,7 @@ def if_special(ast, env):
     return evaluate(z, env)
 
 
-def define_special(ast, env):
+def define(ast, env):
     args = ast[1:]
 
     if len(args) != 2:
@@ -123,7 +136,7 @@ def define_special(ast, env):
     env.set(x, y)
 
 
-def lambda_special(ast, env):
+def lambda_expr(ast, env):
     args = ast[1:]
 
     if len(args) != 2:
@@ -138,9 +151,9 @@ def lambda_special(ast, env):
     return Closure(env, params, body)
 
 
-def closure_special(ast, env):
+def closure(ast, env):
     closure = ast[0]
-    args = evaluate_args(ast[1:], env)
+    args = evaluate_flat(ast[1:], env)
 
     len_of_closure_params = len(closure.params)
     len_of_args = len(args)
@@ -156,13 +169,21 @@ def closure_special(ast, env):
     return evaluate(closure.body, env)
 
 
-# XXX: The difference between functions and specials is that specials accept unevaluated arguments.
-specials = {
-    "quote": quote_special,
-    "if": if_special,
-    "define": define_special,
-    "lambda": lambda_special,
-    "closure": closure_special,
+builtin_functions = {
+    "atom": atom,
+    "eq": eq,
+    "+": add,
+    "-": sub,
+    "*": mul,
+    "/": div,
+    "mod": mod,
+    ">": gt,
+    "<": lt,
+    "quote": quote,
+    "if": if_expr,
+    "define": define,
+    "lambda": lambda_expr,
+    "closure": closure,
 }
 
 
@@ -178,13 +199,8 @@ def evaluate(ast, env):
 
             return evaluate([closure] + args, env)
 
-        if operation in specials:
-            return specials[operation](ast, env)
-
-        if operation in functions:
-            args = evaluate_args(args, env)
-
-            return functions[operation](env, *args)
+        if operation in builtin_functions:
+            return builtin_functions[operation](ast, env)
 
         if not is_symbol(operation):
             raise LispError("not a function")
