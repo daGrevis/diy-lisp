@@ -52,3 +52,19 @@
             (cons
                 (head coll-a)
                 (append (tail coll-a) coll-b)))))
+
+(define filter
+    (lambda (pred coll)
+        (if (empty coll)
+            '()
+            (if (pred (head coll))
+                (cons (head coll) (filter pred (tail coll)))
+                (filter pred (tail coll))))))
+
+(define map
+    (lambda (f coll)
+        (if (empty coll)
+            '()
+            (cons
+                (f (head coll))
+                (map f (tail coll))))))
