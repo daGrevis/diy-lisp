@@ -68,3 +68,37 @@
             (cons
                 (f (head coll))
                 (map f (tail coll))))))
+
+(define _reverse
+    (lambda (coll acc)
+        (if (empty coll)
+            acc
+            (_reverse (tail coll) (cons (head coll) acc)))))
+
+(define reverse
+    (lambda (coll)
+        (_reverse coll '())))
+
+(define range
+    (lambda (from to)
+        (if (> from to)
+            '()
+            (cons from (range (+ from 1) to)))))
+
+(define _lesser-or-equal
+    (lambda (coll pivot)
+        (filter (lambda (x) (<= x pivot)) coll)))
+
+(define _greater
+    (lambda (coll pivot)
+        (filter (lambda (x) (> x pivot)) coll)))
+
+(define sort
+    (lambda (coll)
+        (if (empty coll)
+            '()
+            (append
+                (append
+                    (sort (_lesser-or-equal (tail coll) (head coll)))
+                    (cons (head coll) '()))
+                (sort (_greater coll (head coll)))))))
